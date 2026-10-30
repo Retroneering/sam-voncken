@@ -84,6 +84,10 @@ grid.querySelectorAll('[data-project-cover]').forEach(image => {
 const portrait = document.querySelector('[data-portrait]');
 portrait.addEventListener('error', () => portrait.remove());
 if (portrait.complete && portrait.naturalWidth === 0) portrait.remove();
+document.querySelectorAll('[data-education-logo]').forEach(logo => {
+  logo.addEventListener('error', () => logo.remove(), { once: true });
+  if (logo.complete && logo.naturalWidth === 0) logo.remove();
+});
 modal.querySelectorAll('[data-close-modal]').forEach(control => control.addEventListener('click', () => closeProject()));
 modal.querySelector('[data-project-prev]').addEventListener('click', () => openProject((activeIndex - 1 + projects.length) % projects.length));
 modal.querySelector('[data-project-next]').addEventListener('click', () => openProject((activeIndex + 1) % projects.length));
