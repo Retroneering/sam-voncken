@@ -246,7 +246,7 @@ export const projects = [
       'Quantified the simulated roll-cage contribution as a 25.4% stiffness increase.',
       'Kept experimental evidence and subsequent cage simulation clearly separated.'
     ],
-    links: [{ label: 'Download chassis report', url: './assets/downloads/Renault-4-Chassis-Stiffness-Report.pdf', download: true }]
+    links: [{ label: 'Download chassis report', url: './assets/Renault-4-Chassis-Stiffness-Report.pdf', download: true }]
   },
   {
     id: 'lightyear-durability',
@@ -281,7 +281,7 @@ export const projects = [
       'Identified cable and EMC-shielding degradation concerns requiring further investigation.'
     ],
     note: 'Only the approved internship presentation is shared. The confidential internship report is not published.',
-    links: [{ label: 'Download presentation', url: './assets/downloads/Lightyear-Internship-Presentation.pdf', download: true }]
+    links: [{ label: 'Download presentation', url: './assets/Lightyear-Internship-Presentation.pdf', download: true }]
   },
   {
     id: 'han-4l',
@@ -347,6 +347,6 @@ export const projects = [
       'Received national, school and international recognition for the research and final product.'
     ],
     note: 'Recognition listed in Sam’s project record: KNAW Prize; University of Twente audience prize; Van Melsenprijs Nijmegen; Peter Debye Prize; Best Final Project of Porta Mosana; third-place category results at ICYS 2018 (Serbia) and OKSEEF 2018 (Turkey).',
-    links: [{ label: 'Download report · Dutch', url: './assets/downloads/Longboard-Research-Report-NL.pdf', download: true }]
+    links: [{ label: 'Download report · Dutch', url: './assets/Longboard-Research-Report-NL.pdf', download: true }]
   }
 ];
