@@ -8,6 +8,12 @@ const modalPosition = document.querySelector('#modal-position');
 let activeIndex = -1;
 let lastFocused = null;
 
+['contextmenu', 'dragstart'].forEach(type => {
+  document.addEventListener(type, event => {
+    if (event.target instanceof HTMLImageElement) event.preventDefault();
+  });
+});
+
 const escapeHTML = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 
 function projectCard(project, index) {
@@ -85,8 +91,13 @@ const portrait = document.querySelector('[data-portrait]');
 portrait.addEventListener('error', () => portrait.remove());
 if (portrait.complete && portrait.naturalWidth === 0) portrait.remove();
 document.querySelectorAll('[data-education-logo]').forEach(logo => {
-  logo.addEventListener('error', () => logo.remove(), { once: true });
-  if (logo.complete && logo.naturalWidth === 0) logo.remove();
+  const showFallback = () => {
+    const frame = logo.closest('.education-logo');
+    logo.remove();
+    frame.classList.add('is-missing');
+  };
+  logo.addEventListener('error', showFallback, { once: true });
+  if (logo.complete && logo.naturalWidth === 0) showFallback();
 });
 modal.querySelectorAll('[data-close-modal]').forEach(control => control.addEventListener('click', () => closeProject()));
 modal.querySelector('[data-project-prev]').addEventListener('click', () => openProject((activeIndex - 1 + projects.length) % projects.length));

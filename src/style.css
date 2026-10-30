@@ -25,6 +25,7 @@ button{color:inherit}
 button,a{-webkit-tap-highlight-color:transparent}
 button{border:0;background:none;cursor:pointer}
 img,svg{display:block;max-width:100%}
+img{pointer-events:none;-webkit-user-select:none;user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none}
 ul{list-style:none}
 h1,h2,h3{font-family:var(--display);line-height:1.02;letter-spacing:-.045em;text-wrap:balance}
 p{text-wrap:pretty}
@@ -146,9 +147,10 @@ p{text-wrap:pretty}
 .education-list{border-top:1px solid var(--line-dark)}
 .education-item{display:grid;grid-template-columns:1fr 3fr;gap:36px;padding:35px 0;border-bottom:1px solid var(--line-dark)}
 .education-year{color:var(--yellow);padding-top:5px}
-.education-logo{width:min(150px,100%);aspect-ratio:3/4;margin-top:24px;border:1px solid var(--line-dark);background:#151515;display:grid;place-items:center;position:relative;padding:18px}
-.education-logo>span{font:600 20px/1 var(--display);letter-spacing:-.03em;color:#666660}
-.education-logo img{position:absolute;inset:18px;width:calc(100% - 36px);height:calc(100% - 36px);object-fit:contain}
+.education-logo{width:min(180px,100%);margin-top:24px;position:relative}
+.education-logo>span{display:none;font:600 20px/1 var(--display);letter-spacing:-.03em;color:#888880}
+.education-logo.is-missing>span{display:block}
+.education-logo img{display:block;width:100%;height:auto;max-height:120px;object-fit:contain;object-position:left center}
 .education-item h3{font-size:clamp(25px,3vw,38px);margin-bottom:10px}
 .education-item p{color:#aaa9a2;font-size:14px}
 .education-item .education-detail{max-width:700px;margin-top:14px;line-height:1.7}
@@ -160,15 +162,15 @@ p{text-wrap:pretty}
 .contact-top{display:flex;justify-content:space-between;border-bottom:1px solid rgba(10,10,10,.3);padding-bottom:22px}
 .contact-section h2{font-size:clamp(48px,7vw,96px);font-weight:700;line-height:.95;margin:clamp(72px,9vw,120px) 0 clamp(58px,7vw,90px);padding:0;letter-spacing:-.05em}
 .contact-bottom{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:45px;border-top:1px solid rgba(10,10,10,.35);padding-top:30px;align-items:start}
-.contact-bottom>p{font-size:15px;line-height:1.65;max-width:340px}
-.contact-email{font:600 clamp(16px,1.8vw,24px)/1.3 var(--display);letter-spacing:-.03em;border-bottom:2px solid var(--void);display:inline-block;padding-bottom:8px;overflow-wrap:anywhere}
-.contact-email span{margin-left:15px}
+.contact-bottom>p{font-size:15px;line-height:1.65;max-width:340px;position:relative;z-index:1;cursor:text;-webkit-user-select:text;user-select:text}
+.contact-email{font:600 clamp(16px,1.8vw,24px)/1.3 var(--display);letter-spacing:-.03em;border-bottom:2px solid var(--void);display:flex;align-items:center;justify-content:space-between;width:100%;padding-bottom:8px;overflow-wrap:anywhere}
+.contact-email span:last-child{margin-left:15px}
 .contact-utilities{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
 .contact-email-me,.copy-button{display:inline-block;font-size:9px;line-height:1;margin:0;padding:10px 12px;border:1px solid var(--void);text-transform:uppercase}
 .contact-email-me{background:var(--void);color:var(--yellow)}
 .copy-button{background:transparent}
 .contact-email-me:hover,.copy-button:hover{background:var(--white);color:var(--void)}
-.contact-phone{display:inline-flex;align-items:center;gap:13px;margin-top:22px;font:500 15px/1.4 var(--body-font);border-bottom:1px solid var(--void);padding-bottom:5px}
+.contact-phone{display:flex;align-items:center;gap:13px;width:100%;margin-top:22px;font:500 15px/1.4 var(--body-font);border-bottom:1px solid var(--void);padding-bottom:5px}
 .contact-phone .mono{font-size:9px;text-transform:uppercase}
 .contact-links{display:flex;justify-content:flex-end;align-items:flex-start;gap:18px;font:500 10px/1.5 var(--mono);letter-spacing:.04em;text-transform:uppercase}
 .contact-links a{display:inline-flex;align-items:center;justify-content:center;flex:0 1 132px;width:132px;max-width:calc(50% - 9px);height:40px;background:var(--void);color:var(--yellow);border:0;padding:0 12px}
@@ -250,7 +252,7 @@ p{text-wrap:pretty}
   .section-heading{display:block}.section-heading h2{margin-bottom:25px}.section-heading .section-index{margin-bottom:25px}.section-heading>p{max-width:520px}
   .timeline-item{display:block;position:relative;padding:25px 0}.timeline-date{margin-bottom:13px}.timeline-tag{display:inline-block;margin-top:17px}.timeline-item h3{font-size:22px}
   .project-grid{display:block}.project-card,.project-card:nth-child(n),.project-card:last-child{padding-top:0;margin-bottom:50px}.project-card:last-child{margin-bottom:0}.project-visual,.project-card:nth-child(n) .project-visual{aspect-ratio:4/3}.project-open{transform:none;width:42px;height:42px}.project-info h3{font-size:29px}
-  .education-item{display:block}.education-year{display:block;margin-bottom:0}.education-logo{width:110px;margin:18px 0 26px}.education-note p{font-size:18px}
+  .education-item{display:block}.education-year{display:block;margin-bottom:0}.education-logo{width:140px;max-width:55vw;margin:16px 0 22px}.education-logo img{max-height:90px}.education-note p{font-size:18px}
   .contact-section{min-height:0}.contact-top{font-size:8px}.contact-top span:last-child{display:none}.contact-section h2{font-size:clamp(44px,12vw,68px);line-height:1;margin:64px 0 52px}.contact-bottom{display:block}.contact-bottom>p{margin-bottom:30px}.contact-links{margin-top:35px;justify-content:flex-start}.site-footer{font-size:8px;flex-wrap:wrap}.site-footer span:nth-child(2){display:none}
   .modal{padding:0}.modal-dialog{width:100%;max-height:100svh;height:100svh}.modal-toolbar{height:57px;padding:0 20px}.modal-content{padding:30px 20px 45px}.modal-title{font-size:41px}.modal-intro{font-size:21px}.modal-eyebrow{flex-wrap:wrap;font-size:8px;gap:9px}.modal-eyebrow .project-status{margin-left:0}.modal-role{display:block}.modal-role .mono{display:block;margin-bottom:8px}.modal-metrics{grid-template-columns:1fr}.modal-metric,.modal-metric:not(:first-child){border-right:0;border-bottom:1px solid var(--line-light);padding:18px 0}.modal-metric:last-child{border-bottom:0}.modal-metric strong{font-size:31px}.modal-gallery{grid-template-columns:1fr;gap:22px}.modal-body-grid{grid-template-columns:1fr;gap:0}.modal-results ul{grid-template-columns:1fr}.modal-footer{padding:14px 20px}.modal-nav{font-size:8px}
 }
