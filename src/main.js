@@ -118,6 +118,9 @@ menuButton.addEventListener('click', () => {
 });
 nav.addEventListener('click', event => { if (event.target.closest('a')) closeMenu(); });
 
+const contactEmail = ['sam.voncken', 'hotmail.nl'].join('@');
+document.querySelectorAll('[data-email-link]').forEach(link => { link.href = `mailto:${contactEmail}`; });
+document.querySelector('[data-email-text]').textContent = contactEmail;
 const toast = document.querySelector('#toast');
 let toastTimer;
 function showToast(message) {
@@ -127,7 +130,7 @@ function showToast(message) {
   toastTimer = setTimeout(() => toast.classList.remove('visible'), 2200);
 }
 document.querySelector('[data-copy-email]').addEventListener('click', async () => {
-  const email = 'sam.voncken@hotmail.nl';
+  const email = contactEmail;
   try {
     if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(email);
     else {
