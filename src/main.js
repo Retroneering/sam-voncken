@@ -18,10 +18,10 @@ const escapeHTML = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ 
 
 function projectCard(project, index) {
   const cover = project.cover
-    ? `<img src="${project.cover}" alt="${escapeHTML(project.coverAlt)}" loading="lazy" data-project-cover="${index}">`
+    ? `<img class="${project.video ? 'project-cover-still' : ''}" src="${project.cover}" alt="${escapeHTML(project.coverAlt)}" loading="lazy" data-project-cover="${index}">`
     : '<span class="project-image-placeholder mono">Project image</span>';
   const media = project.video
-    ? `<video src="${project.video}" ${project.cover ? `poster="${project.cover}"` : ''} muted loop playsinline webkit-playsinline preload="metadata" tabindex="-1" aria-hidden="true" data-project-video="${index}"></video><button class="video-play-fallback" type="button" data-play-project-video="${index}" hidden>Play video</button>`
+    ? `${cover}<video class="project-cover-video" src="${project.video}" ${project.cover ? `poster="${project.cover}"` : ''} muted loop playsinline webkit-playsinline preload="metadata" tabindex="-1" aria-hidden="true" data-project-video="${index}"></video><button class="video-play-fallback" type="button" data-play-project-video="${index}" hidden>Play video</button>`
     : cover;
   return `<article class="project-card reveal">
     <div class="project-visual">${media}<span class="project-open" aria-hidden="true">↗</span></div>
@@ -98,6 +98,7 @@ function closeProject(updateHash = true) {
 }
 
 grid.innerHTML = projects.map(projectCard).join('');
+const phoneCards = window.matchMedia('(max-width: 760px)');
 const projectVideos = [...grid.querySelectorAll('[data-project-video]')];
 projectVideos.forEach(video => {
   video.muted = true;
@@ -117,7 +118,7 @@ function showVideoPlayFallback(video, show) {
 }
 function syncProjectVideos() {
   projectVideos.forEach(video => {
-    const shouldPlay = !reducedMotion && !document.hidden && activeIndex === -1 && video.dataset.inView === 'true' && video.isConnected;
+    const shouldPlay = !phoneCards.matches && !reducedMotion && !document.hidden && activeIndex === -1 && video.dataset.inView === 'true' && video.isConnected;
     video.autoplay = shouldPlay;
     if (shouldPlay) {
       video.play().catch(() => showVideoPlayFallback(video, true));
@@ -127,6 +128,7 @@ function syncProjectVideos() {
     }
   });
 }
+phoneCards.addEventListener('change', syncProjectVideos);
 grid.addEventListener('click', event => {
   const playTrigger = event.target.closest('[data-play-project-video]');
   if (playTrigger) {
@@ -149,6 +151,14 @@ function replaceMissingCover(image) {
 }
 function replaceMissingVideo(video) {
   const project = projects[Number(video.dataset.projectVideo)];
+  const visual = video.closest('.project-visual');
+  const existingCover = visual?.querySelector('.project-cover-still');
+  if (existingCover) {
+    existingCover.classList.add('is-video-fallback');
+    showVideoPlayFallback(video, false);
+    video.remove();
+    return;
+  }
   if (!project?.cover) {
     replaceMissingCover(video);
     return;
