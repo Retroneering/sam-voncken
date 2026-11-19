@@ -321,7 +321,7 @@ export const projects = [
       'Delivered school supplies and food while establishing a team that continues today.'
     ],
     links: [
-      { label: 'HAN 4L', url: 'http://han4l.nl/', external: true },
+      { label: 'HAN 4L', url: 'https://www.han4l.com/', external: true },
       { label: '4L Trophy', url: 'https://www.4ltrophy.com/', external: true, secondary: true }
     ]
   },
