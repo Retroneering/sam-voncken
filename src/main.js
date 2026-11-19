@@ -49,7 +49,8 @@ function projectGallery(project) {
 
 function projectModal(project, index) {
   const gallery = projectGallery(project);
-  const figures = gallery.length ? `<div class="modal-gallery">${gallery.map(item => `<figure class="modal-figure"><img src="${item.src}" alt="${escapeHTML(item.alt)}" loading="lazy"><figcaption>${escapeHTML(item.caption)}</figcaption></figure>`).join('')}</div>` : '';
+  const videoFigure = project.video ? `<figure class="modal-figure"><video src="${project.video}" ${project.cover ? `poster="${project.cover}"` : ''} controls playsinline preload="metadata" aria-label="${escapeHTML(project.title)} project video"></video><figcaption>Project video.</figcaption></figure>` : '';
+  const figures = gallery.length || videoFigure ? `<div class="modal-gallery">${videoFigure}${gallery.map(item => `<figure class="modal-figure"><img src="${item.src}" alt="${escapeHTML(item.alt)}" loading="lazy"><figcaption>${escapeHTML(item.caption)}</figcaption></figure>`).join('')}</div>` : '';
   const links = project.links?.length ? `<div class="modal-links">${project.links.map(link => `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="${link.secondary ? 'secondary' : ''}">${escapeHTML(link.label)} <span aria-hidden="true">↗</span></a>`).join('')}</div>` : '';
   return `<div class="modal-eyebrow"><span>/${String(index + 1).padStart(2, '0')}</span><span>${escapeHTML(project.category)}</span><span>${escapeHTML(project.year)}</span>${project.status ? `<span class="project-status">${escapeHTML(project.status)}</span>` : ''}</div>
     <h2 class="modal-title" id="modal-title">${escapeHTML(project.title)}</h2>
@@ -80,6 +81,7 @@ function openProject(index, updateHash = true) {
 
 function closeProject(updateHash = true) {
   if (activeIndex === -1) return;
+  modalContent.querySelectorAll('video').forEach(video => video.pause());
   modal.hidden = true;
   document.body.classList.remove('modal-open');
   activeIndex = -1;
@@ -152,7 +154,7 @@ document.addEventListener('keydown', event => {
     closeMenu();
   }
   if (event.key === 'Tab' && activeIndex !== -1) {
-    const focusable = [...dialog.querySelectorAll('a[href], button:not([disabled]), [tabindex="0"]')].filter(el => el.offsetParent !== null);
+    const focusable = [...dialog.querySelectorAll('a[href], button:not([disabled]), video[controls], [tabindex="0"]')].filter(el => el.offsetParent !== null);
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
     if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
