@@ -92,6 +92,11 @@ function closeProject(updateHash = true) {
 
 grid.innerHTML = projects.map(projectCard).join('');
 const projectVideos = [...grid.querySelectorAll('[data-project-video]')];
+projectVideos.forEach(video => {
+  video.muted = true;
+  video.defaultMuted = true;
+  video.playsInline = true;
+});
 function pauseProjectVideos() {
   projectVideos.forEach(video => video.pause());
 }
@@ -222,7 +227,15 @@ if ('IntersectionObserver' in window && !reducedMotion) {
   projectVideos.forEach(video => { video.dataset.inView = 'true'; });
   syncProjectVideos();
 }
+projectVideos.forEach(video => {
+  video.addEventListener('loadeddata', syncProjectVideos);
+  video.addEventListener('canplay', syncProjectVideos);
+});
 document.addEventListener('visibilitychange', syncProjectVideos);
+window.addEventListener('pageshow', syncProjectVideos);
+// Some mobile browsers allow muted playback only after the first user gesture.
+document.addEventListener('pointerdown', syncProjectVideos, { passive: true });
+document.addEventListener('touchstart', syncProjectVideos, { passive: true });
 
 document.querySelector('#year').textContent = new Date().getFullYear();
 const initialProject = location.hash.startsWith('#project-') ? projects.findIndex(project => `#project-${project.id}` === location.hash) : -1;
