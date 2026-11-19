@@ -21,7 +21,7 @@ function projectCard(project, index) {
     ? `<img src="${project.cover}" alt="${escapeHTML(project.coverAlt)}" loading="lazy" data-project-cover="${index}">`
     : '<span class="project-image-placeholder mono">Project image</span>';
   const media = project.video
-    ? `<video src="${project.video}" ${project.cover ? `poster="${project.cover}"` : ''} muted loop playsinline webkit-playsinline preload="metadata" tabindex="-1" aria-hidden="true" data-project-video="${index}"></video>`
+    ? `<video src="${project.video}" ${project.cover ? `poster="${project.cover}"` : ''} muted loop playsinline webkit-playsinline preload="metadata" tabindex="-1" aria-hidden="true" data-project-video="${index}"></video><button class="video-play-fallback" type="button" data-play-project-video="${index}" hidden>Play video</button>`
     : cover;
   return `<article class="project-card reveal">
     <div class="project-visual">${media}<span class="project-open" aria-hidden="true">↗</span></div>
@@ -49,7 +49,7 @@ function projectGallery(project) {
 
 function projectModal(project, index) {
   const gallery = projectGallery(project);
-  const videoFigure = project.video ? `<figure class="modal-figure"><video src="${project.video}" ${project.cover ? `poster="${project.cover}"` : ''} controls playsinline preload="metadata" aria-label="${escapeHTML(project.title)} project video"></video><figcaption>Project video.</figcaption></figure>` : '';
+  const videoFigure = project.video ? `<figure class="modal-figure"><video src="${project.video}" autoplay muted loop controls playsinline webkit-playsinline preload="auto" aria-label="${escapeHTML(project.title)} project video"></video><figcaption>Project video · starts muted.</figcaption></figure>` : '';
   const figures = gallery.length || videoFigure ? `<div class="modal-gallery">${videoFigure}${gallery.map(item => `<figure class="modal-figure"><img src="${item.src}" alt="${escapeHTML(item.alt)}" loading="lazy"><figcaption>${escapeHTML(item.caption)}</figcaption></figure>`).join('')}</div>` : '';
   const links = project.links?.length ? `<div class="modal-links">${project.links.map(link => `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="${link.secondary ? 'secondary' : ''}">${escapeHTML(link.label)} <span aria-hidden="true">↗</span></a>`).join('')}</div>` : '';
   return `<div class="modal-eyebrow"><span>/${String(index + 1).padStart(2, '0')}</span><span>${escapeHTML(project.category)}</span><span>${escapeHTML(project.year)}</span>${project.status ? `<span class="project-status">${escapeHTML(project.status)}</span>` : ''}</div>
@@ -71,6 +71,13 @@ function openProject(index, updateHash = true) {
   pauseProjectVideos();
   const project = projects[index];
   modalContent.innerHTML = projectModal(project, index);
+  modalContent.querySelectorAll('video').forEach(video => {
+    video.muted = true;
+    video.defaultMuted = true;
+    video.autoplay = !reducedMotion;
+    if (reducedMotion) video.pause();
+    else video.play().catch(() => {});
+  });
   modalPosition.textContent = `Case study ${String(index + 1).padStart(2, '0')} / ${String(projects.length).padStart(2, '0')}`;
   modal.hidden = false;
   document.body.classList.add('modal-open');
@@ -96,18 +103,42 @@ projectVideos.forEach(video => {
   video.muted = true;
   video.defaultMuted = true;
   video.playsInline = true;
+  video.addEventListener('playing', () => showVideoPlayFallback(video, false));
 });
 function pauseProjectVideos() {
-  projectVideos.forEach(video => video.pause());
+  projectVideos.forEach(video => {
+    video.autoplay = false;
+    video.pause();
+  });
+}
+function showVideoPlayFallback(video, show) {
+  const button = video.closest('.project-visual')?.querySelector('[data-play-project-video]');
+  if (button) button.hidden = !show;
 }
 function syncProjectVideos() {
   projectVideos.forEach(video => {
     const shouldPlay = !reducedMotion && !document.hidden && activeIndex === -1 && video.dataset.inView === 'true' && video.isConnected;
-    if (shouldPlay) video.play().catch(() => {});
-    else video.pause();
+    video.autoplay = shouldPlay;
+    if (shouldPlay) {
+      video.play().catch(() => showVideoPlayFallback(video, true));
+    } else {
+      showVideoPlayFallback(video, false);
+      video.pause();
+    }
   });
 }
 grid.addEventListener('click', event => {
+  const playTrigger = event.target.closest('[data-play-project-video]');
+  if (playTrigger) {
+    event.preventDefault();
+    event.stopPropagation();
+    const video = grid.querySelector(`[data-project-video="${playTrigger.dataset.playProjectVideo}"]`);
+    if (video) {
+      video.autoplay = true;
+      video.play().catch(() => showVideoPlayFallback(video, true));
+    }
+    return;
+  }
   const trigger = event.target.closest('[data-open-project]');
   if (trigger) openProject(Number(trigger.dataset.openProject));
 });
