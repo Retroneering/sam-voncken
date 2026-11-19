@@ -17,9 +17,12 @@ let lastFocused = null;
 const escapeHTML = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 
 function projectCard(project, index) {
-  const media = project.cover
+  const cover = project.cover
     ? `<img src="${project.cover}" alt="${escapeHTML(project.coverAlt)}" loading="lazy" data-project-cover="${index}">`
     : '<span class="project-image-placeholder mono">Project image</span>';
+  const media = project.video
+    ? `<video src="${project.video}" ${project.cover ? `poster="${project.cover}"` : ''} muted loop playsinline webkit-playsinline preload="metadata" tabindex="-1" aria-hidden="true" data-project-video="${index}"></video>`
+    : cover;
   return `<article class="project-card reveal">
     <div class="project-visual">${media}<span class="project-open" aria-hidden="true">↗</span></div>
     <div class="project-info">
@@ -32,9 +35,22 @@ function projectCard(project, index) {
   </article>`;
 }
 
+function projectGallery(project) {
+  if (!project.imagePrefix || !project.imageCount) return project.media || [];
+  return Array.from({ length: project.imageCount }, (_, imageIndex) => {
+    const number = imageIndex + 1;
+    return {
+      src: `./assets/images/${project.imagePrefix}${number}.webp`,
+      alt: `${project.coverAlt} — image ${number}`,
+      caption: `Project image ${number} of ${project.imageCount}.`
+    };
+  });
+}
+
 function projectModal(project, index) {
-  const figures = project.media?.length ? `<div class="modal-gallery">${project.media.map(item => `<figure class="modal-figure"><img src="${item.src}" alt="${escapeHTML(item.alt)}" loading="lazy"><figcaption>${escapeHTML(item.caption)}</figcaption></figure>`).join('')}</div>` : '';
-  const links = project.links?.length ? `<div class="modal-links">${project.links.map(link => `<a href="${link.url}" ${link.download ? 'download' : ''} ${link.external ? 'target="_blank" rel="noopener noreferrer"' : ''} class="${link.secondary ? 'secondary' : ''}">${escapeHTML(link.label)} <span aria-hidden="true">${link.download ? '↓' : '↗'}</span></a>`).join('')}</div>` : '';
+  const gallery = projectGallery(project);
+  const figures = gallery.length ? `<div class="modal-gallery">${gallery.map(item => `<figure class="modal-figure"><img src="${item.src}" alt="${escapeHTML(item.alt)}" loading="lazy"><figcaption>${escapeHTML(item.caption)}</figcaption></figure>`).join('')}</div>` : '';
+  const links = project.links?.length ? `<div class="modal-links">${project.links.map(link => `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="${link.secondary ? 'secondary' : ''}">${escapeHTML(link.label)} <span aria-hidden="true">↗</span></a>`).join('')}</div>` : '';
   return `<div class="modal-eyebrow"><span>/${String(index + 1).padStart(2, '0')}</span><span>${escapeHTML(project.category)}</span><span>${escapeHTML(project.year)}</span>${project.status ? `<span class="project-status">${escapeHTML(project.status)}</span>` : ''}</div>
     <h2 class="modal-title" id="modal-title">${escapeHTML(project.title)}</h2>
     <p class="modal-intro">${escapeHTML(project.intro)}</p>
@@ -51,6 +67,7 @@ function openProject(index, updateHash = true) {
   if (index < 0 || index >= projects.length) return;
   if (activeIndex === -1) lastFocused = document.activeElement;
   activeIndex = index;
+  pauseProjectVideos();
   const project = projects[index];
   modalContent.innerHTML = projectModal(project, index);
   modalPosition.textContent = `Case study ${String(index + 1).padStart(2, '0')} / ${String(projects.length).padStart(2, '0')}`;
@@ -67,10 +84,22 @@ function closeProject(updateHash = true) {
   document.body.classList.remove('modal-open');
   activeIndex = -1;
   if (updateHash) history.replaceState(null, '', '#projects');
+  syncProjectVideos();
   if (lastFocused && document.contains(lastFocused)) lastFocused.focus({ preventScroll: true });
 }
 
 grid.innerHTML = projects.map(projectCard).join('');
+const projectVideos = [...grid.querySelectorAll('[data-project-video]')];
+function pauseProjectVideos() {
+  projectVideos.forEach(video => video.pause());
+}
+function syncProjectVideos() {
+  projectVideos.forEach(video => {
+    const shouldPlay = !reducedMotion && !document.hidden && activeIndex === -1 && video.dataset.inView === 'true' && video.isConnected;
+    if (shouldPlay) video.play().catch(() => {});
+    else video.pause();
+  });
+}
 grid.addEventListener('click', event => {
   const trigger = event.target.closest('[data-open-project]');
   if (trigger) openProject(Number(trigger.dataset.openProject));
@@ -80,9 +109,23 @@ function replaceMissingCover(image) {
   image.remove();
   visual.insertAdjacentHTML('afterbegin', '<span class="project-image-placeholder mono">Project image</span>');
 }
+function replaceMissingVideo(video) {
+  const project = projects[Number(video.dataset.projectVideo)];
+  if (!project?.cover) {
+    replaceMissingCover(video);
+    return;
+  }
+  const image = document.createElement('img');
+  image.src = project.cover;
+  image.alt = project.coverAlt;
+  image.loading = 'lazy';
+  image.dataset.projectCover = video.dataset.projectVideo;
+  video.replaceWith(image);
+}
 grid.addEventListener('error', event => {
-  const image = event.target;
-  if (image.matches('[data-project-cover]')) replaceMissingCover(image);
+  const media = event.target;
+  if (media.matches('[data-project-video]')) replaceMissingVideo(media);
+  else if (media.matches('[data-project-cover]')) replaceMissingCover(media);
 }, true);
 grid.querySelectorAll('[data-project-cover]').forEach(image => {
   if (image.complete && image.naturalWidth === 0) replaceMissingCover(image);
@@ -164,6 +207,20 @@ if ('IntersectionObserver' in window && !reducedMotion) {
   }, { threshold: 0.08, rootMargin: '0px 0px -30px' });
   document.querySelectorAll('.reveal').forEach(element => observer.observe(element));
 } else document.querySelectorAll('.reveal').forEach(element => element.classList.add('is-visible'));
+
+if ('IntersectionObserver' in window && !reducedMotion) {
+  const videoObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      entry.target.dataset.inView = String(entry.isIntersecting);
+      syncProjectVideos();
+    });
+  }, { threshold: 0.15, rootMargin: '120px 0px' });
+  projectVideos.forEach(video => videoObserver.observe(video));
+} else if (!reducedMotion) {
+  projectVideos.forEach(video => { video.dataset.inView = 'true'; });
+  syncProjectVideos();
+}
+document.addEventListener('visibilitychange', syncProjectVideos);
 
 document.querySelector('#year').textContent = new Date().getFullYear();
 const initialProject = location.hash.startsWith('#project-') ? projects.findIndex(project => `#project-${project.id}` === location.hash) : -1;
